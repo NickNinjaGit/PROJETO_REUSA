@@ -20,18 +20,19 @@ const LoginPage = () => {
     e.preventDefault();
     setEmailError('');
     setPasswordError('');
-
+  
     try {
-      const response = await fetch('https://reusa.onrender.com/api/login', {
+      const response = await fetch('http://localhost:5000/users/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ email, password }),
+        credentials: 'include'  // Certifica q os cookies sejam enviados
       });
-
+  
       const data = await response.json();
-
+  
       if (!response.ok) {
         switch (data.field) {
           case 'email':
@@ -45,17 +46,17 @@ const LoginPage = () => {
         }
         return;
       }
-
-      localStorage.setItem('token', data.token);
-
+  
+      // Não precisa armazenar o token, já que ele está nos cookies entao pq antes tava armazenando em localstorage
+      
+  
       login({
         id: data.id,
         name: data.name,
         email: data.email,
         role: data.role,
-        token: data.token,
       });
-
+  
       document.getElementById('login-card').classList.add('fade-out');
       setTimeout(() => {
         navigate('/');

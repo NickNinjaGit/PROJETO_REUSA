@@ -9,7 +9,7 @@ const SignupPage = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [confirmpassword, setConfirmPassword] = useState('');
   const [nameError, setNameError] = useState('');
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
@@ -26,40 +26,41 @@ const SignupPage = () => {
     setEmailError('');
     setPasswordError('');
     setConfirmPasswordError('');
-
+  
     // Validações no frontend
     if (name.length < 2 || name.length > 50) {
       setNameError('O nome deve ter entre 2 e 50 caracteres');
       return;
     }
-
+  
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       setEmailError('Email inválido');
       return;
     }
-
+  
     if (password.length < 6) {
       setPasswordError('A senha deve ter pelo menos 6 caracteres');
       return;
     }
-
-    if (password !== confirmPassword) {
+  
+    if (password !== confirmpassword) {
       setConfirmPasswordError('As senhas não coincidem');
       return;
     }
-
+  
     try {
-      const response = await fetch('https://reusa.onrender.com/api/register', {
+      const response = await fetch('http://localhost:5000/users/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ name, email, password }),
+        body: JSON.stringify({ name, email, password , confirmpassword }),
+        credentials: 'include',  // Certifica-se de que os cookies sejam enviados
       });
-
+  
       const data = await response.json();
-
+  
       if (!response.ok) {
         switch (data.field) {
           case 'name':
@@ -76,17 +77,15 @@ const SignupPage = () => {
         }
         return;
       }
-
-      localStorage.setItem('token', data.token);
-
+  
+      // Não precisa armazenar o token, ele já está nos cookies
       login({
         id: data.id,
         name: data.name,
         email: data.email,
         role: data.role,
-        token: data.token,
       });
-
+  
       document.getElementById('signup-card').classList.add('fade-out');
       setTimeout(() => {
         navigate('/');
@@ -154,7 +153,7 @@ const SignupPage = () => {
               type="password"
               id="confirmPassword"
               placeholder="********"
-              value={confirmPassword}
+              value={confirmpassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               className={confirmPasswordError ? 'error' : ''}
               required
