@@ -27,12 +27,12 @@ const User = db.define(
       type: DataTypes.STRING,
     },
     role: {
-      type: DataTypes.ENUM("USER", "INSTRUCTOR", "ADMIN"),
+      type: DataTypes.ENUM("USER", "INSTRUCTOR", "COMPANY", "ADMIN"),
       allowNull: false,
       validate: {
         isIn: {
-          args: [["USER", "INSTRUCTOR", "ADMIN"]],
-          msg: "Role inválido, use USER, INSTRUCTOR ou ADMIN",
+          args: [["USER", "INSTRUCTOR", "COMPANY", "ADMIN"]],
+          msg: "Role inválido, use USER, INSTRUCTOR, COMPANY ou ADMIN",
         },
       },
     },
