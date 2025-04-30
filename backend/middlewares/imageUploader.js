@@ -7,6 +7,7 @@ const imageStorage = multer.diskStorage({
         let folder = "";  // local
         if (req.baseUrl.includes('users')) folder = 'users';
         else if (req.baseUrl.includes('posts')) folder = 'posts';
+        else if (req.baseUrl.includes('courses')) folder = 'courses';
         
         cb(null, `./public/images/${folder}`);
     },
@@ -25,7 +26,7 @@ const imageUploader = multer({
     {
         if(!file.originalname.match(/\.(png|jpg|jpeg)$/))
         {
-            return cb(new Error('Please upload only png, jpg or jpeg'));
+            return cb(new Error('Please envie apenas arquivos png, jpg or jpeg'));
         }
         cb(undefined, true);
     }

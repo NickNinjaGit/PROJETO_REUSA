@@ -2,7 +2,7 @@ import { UserController } from "../controllers/UserController.js";
 import express from "express";
 import { verifyToken } from "../middlewares/verify-token.js";
 const router = express.Router();
-import { imageUploader } from "../helpers/image-uploader.js";
+import { imageUploader } from "../middlewares/imageUploader.js";
 
 // register
 router.post("/register", UserController.Register);
