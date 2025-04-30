@@ -14,8 +14,13 @@ import { Lesson } from "./models/Lesson.js";
 
 // Routes
 import { UserRoutes } from "./routes/UserRoutes.js";
+import { AdminRoutes } from "./routes/AdminRoutes.js";
+import { InstructorRoutes } from "./routes/InstructorRoutes.js";
 // import postRoutes from "./routes/postRoutes.js";
-// import courseRoutes from "./routes/courseRoutes.js";
+// import courseRoutes from "./routes/courseRoutes.js";~
+
+// helper
+import { createFirstAdmin } from "./helpers/create-first-admin.js";
 
 const app = express();
 // Config JSON response
@@ -26,11 +31,12 @@ app.use(cookieParser());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 // Solve CORS
-app.use(cors({ credentials: true , origin: "http://localhost:5173"}));
+app.use(cors({ credentials: true, origin: "http://localhost:5173" }));
 
 try {
   await conn.authenticate();
   await conn.sync({ force: false });
+  await createFirstAdmin();
   console.log("Database connected");
 } catch (error) {
   console.log(error);
@@ -38,6 +44,8 @@ try {
 
 // Routes
 app.use("/users", UserRoutes);
+app.use("/instructors", InstructorRoutes);
+app.use("/admin", AdminRoutes);
 // app.use("/post", postRoutes);
 // app.use("/course", courseRoutes);
 

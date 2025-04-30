@@ -42,7 +42,7 @@ export class UserController {
       email,
       password: passwordHash,
       score: 0,
-      userRole: "user",
+      role: "USER",
     });
     // send response
     try {
@@ -116,6 +116,11 @@ export class UserController {
   static async Update(req, res) {
     // get id from params
     const id = req.params.id;
+    if (!id)
+    {
+      res.status(422).json({ message: "O id é obrigatório", field: "id" });
+      return;
+    }
     // get token
     const token = getToken(req);
     // get user by token
@@ -137,7 +142,7 @@ export class UserController {
     }
     // check if email exists
     const userExists = await User.findOne({ where: { email } });
-    if (user.email !== email && userExists) {
+    if (userExists && userExists.id !== Number(id)) {
       res.status(422).json({ message: "Por favor, use outro email", field: "email" });
       return;
     }

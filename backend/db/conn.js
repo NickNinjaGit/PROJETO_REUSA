@@ -7,6 +7,7 @@ const db = new Sequelize({
     username: process.env.DB_ROOT,
     password: process.env.DB_PASSWORD,
     database: "reusa",
+    logging: true
 });
 
 export default db;

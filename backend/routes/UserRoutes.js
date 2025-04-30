@@ -1,6 +1,6 @@
 import { UserController } from "../controllers/UserController.js";
 import express from "express";
-import { verifyToken } from "../helpers/verify-token.js";
+import { verifyToken } from "../middlewares/verify-token.js";
 const router = express.Router();
 import { imageUploader } from "../helpers/image-uploader.js";
 
