@@ -174,8 +174,8 @@ export class UserController {
         id
       }
     });
-
-    res.status(200).json({ message: "Usuário atualizado com sucesso" });
+    const userData = await User.findByPk(id);
+    res.status(200).json({ message: "Usuário atualizado com sucesso", user: userData });
   }
 
   static async refreshUserToken(req, res) {

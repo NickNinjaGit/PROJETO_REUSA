@@ -152,10 +152,13 @@ export class AdminController {
 
     // atualiza o usuário
     try {
-        const userData = { name, email, password: passwordHash, role };
-      const user = await User.update({
-        ...userData
-      }, {where: { id }});
+      const userData = { name, email, password: passwordHash, role };
+      const user = await User.update(
+        {
+          ...userData,
+        },
+        { where: { id } }
+      );
       res
         .status(200)
         .json({ message: "Usuário atualizado com suecesso", userData });
@@ -165,8 +168,7 @@ export class AdminController {
         .json({ message: "Erro ao atualizar usuário", error });
     }
   }
-  static async DeleteUser(req, res)
-  {
+  static async DeleteUser(req, res) {
     const { id } = req.params;
     // verificar se o usuário é o primeiro admin
     if (Number(id) === 1) {
@@ -177,7 +179,16 @@ export class AdminController {
       await User.destroy({ where: { id } });
       res.status(200).json({ message: "Usuário deletado com suecesso" });
     } catch (error) {
-      return res.status(500).json({ message: "Erro ao deletar usuário", error });
+      return res
+        .status(500)
+        .json({ message: "Erro ao deletar usuário", error });
     }
+  }
+  static async Courses(req, res) {
+    res
+      .status(200)
+      .json({
+        message: "Admin detectado, redirecionando para gerenciamento de cursos",
+      });
   }
 }

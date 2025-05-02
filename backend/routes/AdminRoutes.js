@@ -13,7 +13,7 @@ router.patch("/user/edit/:id", verifyToken, isAdmin, AdminController.UpdateUser)
 router.delete("/user/delete/:id", verifyToken, isAdmin, AdminController.DeleteUser);
 
 // Courses managment
-//router.get("/courses", verifyToken, isAdmin, AdminController.Courses);
+router.get("/courses", verifyToken, isAdmin, AdminController.Courses);
 // Prizes managment
 //router.get("/prizes", verifyToken, isAdmin, AdminController.Prizes);
 

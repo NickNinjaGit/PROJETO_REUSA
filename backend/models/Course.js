@@ -12,8 +12,8 @@ const Course = db.define("Course", {
         required: true
     },
     duration: {
-        type: DataTypes.STRING,
-        required: false,
+        type: DataTypes.FLOAT,
+        required: true,
     },
     thumbnail: {
         type: DataTypes.STRING,

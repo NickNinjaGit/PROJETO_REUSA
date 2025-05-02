@@ -3,8 +3,14 @@ import path from "path";
 
 // iniciando um storage do multer
 const videoStorage = multer.diskStorage({
-  destination: { dest: path.join("./public/videos") },
-  fileName: (req, file, cb) => {
+  destination: function (req, file, cb) {
+    let folder = "";  // local
+    if (req.baseUrl.includes('posts')) folder = 'posts'; 
+    else if (req.baseUrl.includes('courses')) folder = 'lessons';
+    cb (null, `./public/videos/${folder}`);
+},
+
+  filename: (req, file, cb) => {
     const uniqueSuffix = Date.now() + String(Math.floor(Math.random() * 1000));
     const ext = path.extname(file.originalname);
     cb(null, uniqueSuffix + ext);

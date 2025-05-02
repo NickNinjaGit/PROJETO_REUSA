@@ -16,7 +16,7 @@ import { Lesson } from "./models/Lesson.js";
 import { UserRoutes } from "./routes/UserRoutes.js";
 import { AdminRoutes } from "./routes/AdminRoutes.js";
 // import postRoutes from "./routes/postRoutes.js";
-import {CourseRoutes} from "./routes/courseRoutes.js";
+import { CourseRoutes } from "./routes/CourseRoutes.js";
 // import PrizesRoutes from "./routes/PrizesRoutes.js";
 
 // helper
@@ -45,10 +45,9 @@ try {
 // Routes
 app.use("/users", UserRoutes);
 app.use("/admin", AdminRoutes);
-app.use("/course", CourseRoutes);
+app.use("/courses", CourseRoutes);
 // app.use("/post", postRoutes);
 // app.use("/prizes", PrizesRoutes);
-
 
 // Public folder for images
 app.use(express.static("public"));

@@ -11,8 +11,12 @@ const Module = db.define("Module", {
         type: DataTypes.STRING,
         required: true,
     },
+    order: {
+        type: DataTypes.INTEGER,
+        required: true,
+    },
     duration: {
-        type: DataTypes.STRING,
+        type: DataTypes.FLOAT,
         required: false,
     },
 }, {timestamps: false});

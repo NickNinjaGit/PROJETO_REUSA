@@ -13,7 +13,7 @@ const isInstructor = async (req, res, next) => {
   // se for um admin, redireciona para a rota de gerenciamento de cursos
   if (user.role === "ADMIN")
   {
-    return res.redirect("/admin/courses").status(200);
+    return res.redirect("/admin/courses");
   }
   if (user.role !== "INSTRUCTOR") {
     return res.status(403).json({ message: "Acesso negado" });

@@ -10,8 +10,16 @@ const Lesson = db.define("Lesson", {
         type: DataTypes.STRING,
         required: true,
     },
-    duration: {
+    order: {
+        type: DataTypes.INTEGER,
+        required: true,
+    },
+    video: {
         type: DataTypes.STRING,
+        required: true,
+    },
+    duration: {
+        type: DataTypes.FLOAT,
         required: false,
     },
 
