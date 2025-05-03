@@ -117,5 +117,5 @@ router.delete(
 router.get("/", verifyToken, CourseController.getAllCourses);
 router.get("/:id", verifyToken, CourseController.getCourseById);
 // rota para carregar video aula individualmente
-//router.get("/:courseId/:moduleId/:id", verifyToken, LessonController.getLessonById);
+router.get("/:courseId/:moduleId/:id", verifyToken, LessonController.getLessonById);
 export { router as CourseRoutes };

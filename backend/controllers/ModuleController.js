@@ -1,11 +1,6 @@
 import { Module } from "../models/Module.js";
 import { Lesson } from "../models/Lesson.js";
 import { Course } from "../models/Course.js";
-
-// helpers
-import { trackDurationTime } from "../helpers/track-duration-time.js";
-
-
 export class ModuleController {
   /* Instrutor */
   
@@ -103,8 +98,8 @@ export class ModuleController {
       .status(404)
       .json({ message: "Módulo nao encontrado", field: "id" });
     }
-    await trackDurationTime(module.Lessons, module);
     //calcular duração dos módulos baseado no tempo das lições
+    await module.save({ fields: ["duration"] });
     res.status(200).json({ module });
   }
   static async Edit(req, res) {
@@ -142,7 +137,7 @@ export class ModuleController {
     }
     // verificar se houver um módulo com a mesma ordem
     const moduleOrderExists = await Module.findOne({ where: { order } });
-    if (moduleOrderExists) {
+    if (moduleOrderExists && moduleOrderExists.id !== Number(id)) {
       return res.status(409).json({
         message:
           "Módulo com mesma ordem já foi registrado. Escolha uma ordem diferente",

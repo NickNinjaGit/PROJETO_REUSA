@@ -5,6 +5,7 @@ import path from "path";
 import fs from "fs";
 
 import { getVideoDurationInSeconds } from "get-video-duration";
+import { trackDurationTime } from "../helpers/track-duration-time.js";
 
 export class LessonController {
   static async getAllLessons(req, res) {
@@ -30,6 +31,33 @@ export class LessonController {
     }
     const lessons = await Lesson.findAll({ where: { ModuleId: moduleId }, order: [["order", "ASC"]] });
     res.status(200).json({ lessons });
+  }
+
+  static async getLessonById(req, res)
+  {
+    const { courseId, moduleId, id } = req.params;
+    const module = await Module.findByPk(moduleId);
+    if (!module) {
+      return res
+        .status(404)
+        .json({ message: "Módulo nao encontrado", field: "id" });
+    }
+    if (module.CourseId !== Number(courseId)) {
+      return res.status(403).json({ message: "Acesso negado" });
+    }
+    const course = await Course.findByPk(courseId);
+    if (!course) {
+      return res
+        .status(404)
+        .json({ message: "Curso nao encontrado", field: "id" });
+    }
+    const lesson = await Lesson.findByPk(id);
+    if (!lesson) {
+      return res
+        .status(404)
+        .json({ message: "Aula nao encontrada", field: "id" });
+    }
+    res.status(200).json({ lesson });
   }
 
   static async getAllInstructorLessons(req, res) {
@@ -132,7 +160,11 @@ export class LessonController {
       duration: Number(videoDuration),
       ModuleId: moduleId,
     });
+    // recalcular o tempo total do módulo
+    await trackDurationTime([lesson], module);
     res.status(201).json({ lesson });
+    
+    
   }
   static async getInstructorLessonById(req, res) {
     const { courseId, moduleId, id } = req.params;
@@ -244,8 +276,10 @@ export class LessonController {
       },
       { where: { id } }
     );
-
-    res.status(200).json({ lesson });
+    // recalcular tempo de duração do módulo
+    await trackDurationTime([lesson], module);
+    const editedLesson = await Lesson.findByPk(id);
+    res.status(200).json({ editedLesson });
   }
   static async Delete(req, res) {
     const { courseId, moduleId, id } = req.params;
@@ -292,8 +326,11 @@ export class LessonController {
       console.log(error);
       res.status(500).json({ message: "Erro ao deletar video do servidor" });
     }
-
     await Lesson.destroy({ where: { id } });
+    // recalcular tempo de duração do módulo
+    await trackDurationTime([lesson], module);
     res.status(200).json({ message: "Aula deletada com sucesso" });
+
+    
   }
 }

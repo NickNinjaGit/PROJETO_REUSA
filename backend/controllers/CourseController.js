@@ -167,6 +167,7 @@ export class CourseController {
     const { id } = req.params;
     // procurar o curso pelo id
     const course = await Course.findByPk(id);
+    console.log(id);
     // verificar se o curso pertence aquele instrutor logado
     if (course.UserId !== req.user.id) {
       return res.status(403).json({ message: "Acesso negado" });
@@ -187,6 +188,9 @@ export class CourseController {
       console.log(error);
       res.status(500).json({ message: "Erro ao deletar imagem do servidor" });
     }
+    
+    // deletar todos os módulos relacionados ao curso
+    await Module.destroy({ where: { CourseId: id } });
     // deletar o curso
     await course.destroy();
     // retornar mensagem de sucesso

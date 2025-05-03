@@ -23,6 +23,7 @@ const Lesson = db.define("Lesson", {
         required: false,
     },
 
-}, {timestamps: false});
+}, 
+{timestamps: false});
 
 export { Lesson };

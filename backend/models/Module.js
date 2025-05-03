@@ -2,6 +2,9 @@ import db from "../db/conn.js";
 import { DataTypes } from "sequelize";
 import { Lesson } from "./Lesson.js";
 
+// helper 
+import { trackDurationTime } from "../helpers/track-duration-time.js";
+
 const Module = db.define("Module", {
     title: {
         type: DataTypes.STRING,
@@ -19,9 +22,12 @@ const Module = db.define("Module", {
         type: DataTypes.FLOAT,
         required: false,
     },
-}, {timestamps: false});
+}, 
+{timestamps: false});
 
-Module.hasMany(Lesson);
+Module.hasMany(Lesson, {
+    onDelete: "CASCADE",
+});
 Lesson.belongsTo(Module);
 
 export { Module };

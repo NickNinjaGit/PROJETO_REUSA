@@ -21,7 +21,7 @@ const Course = db.define("Course", {
     }
 });
 
-Course.hasMany(Module);
+Course.hasMany(Module, { onDelete: "CASCADE" });
 Module.belongsTo(Course);
 
 export { Course };
