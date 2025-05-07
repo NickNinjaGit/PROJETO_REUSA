@@ -1,8 +1,11 @@
 import { Module } from "../models/Module.js";
 import { Lesson } from "../models/Lesson.js";
 import { Course } from "../models/Course.js";
+
+// helper
+import { trackDurationTime } from "../helpers/track-duration-time.js";
 export class ModuleController {
-  /* Instrutor */
+  /* Métodos do Instrutor */
   
   static async getAllInstructorModules(req, res) {
     // pegar o usuário logado
@@ -99,7 +102,7 @@ export class ModuleController {
       .json({ message: "Módulo nao encontrado", field: "id" });
     }
     //calcular duração dos módulos baseado no tempo das lições
-    await module.save({ fields: ["duration"] });
+    await trackDurationTime(module.Lessons, module);
     res.status(200).json({ module });
   }
   static async Edit(req, res) {
@@ -144,12 +147,15 @@ export class ModuleController {
         field: "order",
       });
     }
+
+    const module = await Module.findByPk(id, { include: [Lesson] });
+
     // editar informações do módulo
     await Module.update(
       {
         title,
         description,
-        duration: 0,
+        duration: await trackDurationTime(module.Lessons, module),
         order,
       },
       { where: { id } }
@@ -162,7 +168,7 @@ export class ModuleController {
   static async Delete(req, res) {
     // pega o id do módulo e do curso pelos parametros de URL
     const { courseId, id } = req.params;
-    const course = await Course.findByPk(courseId);
+    const course = await Course.findByPk(courseId, { include: [Module] });
     // verifica se o curso existe
     if (!course) {
       return res
@@ -175,6 +181,9 @@ export class ModuleController {
     }
     // deletar o módulo
     await Module.destroy({ where: { id } });
+    // alterar duração do curso
+    console.log(course);
+    await trackDurationTime(course.Modules, course);
     res.status(200).json({ message: "Módulo deletado com sucesso" });
   }
 }

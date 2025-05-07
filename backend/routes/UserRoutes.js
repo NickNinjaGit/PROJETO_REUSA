@@ -16,6 +16,8 @@ router.get("/check-user", UserController.checkUser);
 router.get("/profile/:id", verifyToken, UserController.getUserById);
 // edit profile
 router.patch("/profile/edit/:id", verifyToken, imageUploader.single("image"), UserController.Update);
+// delete profile
+router.delete("/profile/delete/:id", verifyToken, UserController.Delete);
 // refresh user token
 router.get("/refresh", UserController.refreshUserToken);
 

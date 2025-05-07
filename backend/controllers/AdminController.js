@@ -1,6 +1,8 @@
 import { User } from "../models/User.js";
 import bcrypt from "bcrypt";
 
+// services
+import { AdminService } from "../services/AdminService.js";
 export class AdminController {
   static async Dashboard(req, res) {
     const users = await User.findAll();
@@ -57,23 +59,13 @@ export class AdminController {
         .json({ message: "As senhas não coincidem", field: "password" });
     }
 
-    // hash da senha
-    const salt = bcrypt.genSaltSync(10);
-    const passwordHash = bcrypt.hashSync(password, salt);
-
-    // cria o usuário
-    try {
-      const user = await User.create({
-        name,
-        email,
-        password: passwordHash,
-        score: 0,
-        role,
-      });
-      res.status(201).json({ message: "Usuário criado com suecesso", user });
-    } catch (error) {
-      return res.status(500).json({ message: "Erro ao criar usuário", error });
-    }
+    await AdminService.RegisterUserService(
+      res,
+      name,
+      email,
+      password,
+      role
+    );
   }
   static async getUserById(req, res) {
     const { id } = req.params;
@@ -145,43 +137,21 @@ export class AdminController {
         .status(422)
         .json({ message: "As senhas não coincidem", field: "password" });
     }
-
-    // hash da senha
-    const salt = bcrypt.genSaltSync(10);
-    const passwordHash = bcrypt.hashSync(password, salt);
-
-    // atualiza o usuário
-    try {
-      const userData = { name, email, password: passwordHash, role };
-      const user = await User.update(
-        {
-          ...userData,
-        },
-        { where: { id } }
-      );
-      res
-        .status(200)
-        .json({ message: "Usuário atualizado com suecesso", userData });
-    } catch (error) {
-      return res
-        .status(500)
-        .json({ message: "Erro ao atualizar usuário", error });
-    }
+    await AdminService.UpdateUserService(
+      res,
+      id,
+      name,
+      email,
+      password,
+      role
+    );
+    
   }
   static async DeleteUser(req, res) {
     const { id } = req.params;
     // verificar se o usuário é o primeiro admin
     if (Number(id) === 1) {
       return res.status(403).json({ message: "Acesso negado" });
-    }
-    // deletar o usuário
-    try {
-      await User.destroy({ where: { id } });
-      res.status(200).json({ message: "Usuário deletado com suecesso" });
-    } catch (error) {
-      return res
-        .status(500)
-        .json({ message: "Erro ao deletar usuário", error });
     }
   }
   static async Courses(req, res) {

@@ -66,7 +66,7 @@ export class CourseController {
       }
       // determinar duração do curso baseado nos módulos dele
       await trackDurationTime(course.Modules, course);
-      res.status(200).json({ message: "pintos voadores", course });
+      res.status(200).json({ course });
     } catch (error) {
       console.error(error);
     }
@@ -106,11 +106,6 @@ export class CourseController {
     });
     // retornar o novo curso
     res.status(201).json({ course });
-  }
-  static async getMyCourseById(req, res) {
-    const { id } = req.params;
-    const course = await Course.findByPk(id);
-    res.status(200).json({ course });
   }
   static async Edit(req, res) {
     // pegar o id do curso pelo parametro de URL
@@ -160,6 +155,8 @@ export class CourseController {
     // pegando o curso atualizado
     course = await Course.findByPk(id);
     // retornar o curso atualizado
+    // atualizar duração do curso (se houver mudança de módulos)
+    await trackDurationTime(course.Modules, course);
     res.status(200).json({ message: "Curso atualizado com sucesso", course });
   }
   static async Delete(req, res) {

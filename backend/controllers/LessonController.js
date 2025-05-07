@@ -59,7 +59,7 @@ export class LessonController {
     }
     res.status(200).json({ lesson });
   }
-
+  /* Metodos do instrutor */
   static async getAllInstructorLessons(req, res) {
     const { courseId, moduleId } = req.params;
     // verifica se o módulo pertence aquele curso

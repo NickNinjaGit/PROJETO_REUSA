@@ -8,49 +8,51 @@ import { getToken } from "../helpers/get-token.js";
 import { getUserByToken } from "../helpers/get-user-by-token.js";
 import { refreshToken } from "../helpers/refresh-token.js";
 
+// service
+import { UserService } from "../services/UserService.js";
+
 export class UserController {
   static async Register(req, res) {
     // get data
     const { name, email, password, confirmpassword } = req.body;
     // empty fields
     if (!name) {
-      return res.status(422).json({ message: "O nome é obrigatório", field: "name" });
+      return res
+        .status(422)
+        .json({ message: "O nome é obrigatório", field: "name" });
     }
     if (!email) {
-      return res.status(422).json({ message: "O email é obrigatório", field: "email" });
+      return res
+        .status(422)
+        .json({ message: "O email é obrigatório", field: "email" });
     }
     if (!password) {
-      return res.status(422).json({ message: "A senha é obrigatória", field: "password" });
+      return res
+        .status(422)
+        .json({ message: "A senha é obrigatória", field: "password" });
     }
     if (!confirmpassword) {
-      return res.status(422).json({ message: "A confirmação de senha é obrigatória", field: "confirmpassword" });
+      return res
+        .status(422)
+        .json({
+          message: "A confirmação de senha é obrigatória",
+          field: "confirmpassword",
+        });
     }
     // check if user exists
     const userExists = await User.findOne({ where: { email } });
     if (userExists) {
-      return res.status(422).json({ message: "Por favor, use outro email", field: "email" });
+      return res
+        .status(422)
+        .json({ message: "Por favor, use outro email", field: "email" });
     }
     // check if passwords match
     if (password !== confirmpassword) {
-      return res.status(409).json({ message: "As senhas não coincidem", field: "password" });
+      return res
+        .status(409)
+        .json({ message: "As senhas não coincidem", field: "password" });
     }
-    // encrypt password
-    const salt = bcrypt.genSaltSync(10);
-    const passwordHash = bcrypt.hashSync(password, salt);
-    const user = await User.create({
-      name,
-      email,
-      password: passwordHash,
-      score: 0,
-      role: "USER",
-    });
-    // send response
-    try {
-      // create user
-      await createUserToken(user, req, res);
-    } catch (error) {
-      return res.status(500).json({ message: error });
-    }
+    await UserService.RegisterService(req, res, name, email, password);
   }
 
   static async Login(req, res) {
@@ -58,27 +60,16 @@ export class UserController {
     const { email, password } = req.body;
     // empty fields
     if (!email) {
-      return res.status(422).json({ message: "O email é obrigatório", field: "email" });
+      return res
+        .status(422)
+        .json({ message: "O email é obrigatório", field: "email" });
     }
     if (!password) {
-      return res.status(422).json({ message: "A senha é obrigatória", field: "password" });
+      return res
+        .status(422)
+        .json({ message: "A senha é obrigatória", field: "password" });
     }
-    // check if user exists
-    const user = await User.findOne({ where: { email } });
-    if (!user) {
-      return res.status(404).json({ message: "Usuário não encontrado", field: "email" });
-    }
-    // check if password is correct
-    const checkPassword = bcrypt.compareSync(password, user.password);
-    if (checkPassword === false) {
-      return res.status(422).json({ message: "Senha inválida", field: "password" });
-    }
-    // send response
-    try {
-      await createUserToken(user, req, res);
-    } catch (error) {
-      return res.status(500).json({ message: error });
-    }
+    await UserService.LoginService(req, res, email, password);
   }
 
   static async Logout(req, res) {
@@ -116,8 +107,7 @@ export class UserController {
   static async Update(req, res) {
     // get id from params
     const id = req.params.id;
-    if (!id)
-    {
+    if (!id) {
       res.status(422).json({ message: "O id é obrigatório", field: "id" });
       return;
     }
@@ -137,52 +127,75 @@ export class UserController {
     }
 
     if (!email) {
-      res.status(422).json({ message: "O email é obrigatório", field: "email" });
+      res
+        .status(422)
+        .json({ message: "O email é obrigatório", field: "email" });
       return;
     }
     // check if email exists
     const userExists = await User.findOne({ where: { email } });
     if (userExists && userExists.id !== Number(id)) {
-      res.status(422).json({ message: "Por favor, use outro email", field: "email" });
+      res
+        .status(422)
+        .json({ message: "Por favor, use outro email", field: "email" });
       return;
     }
     if (!password) {
-      res.status(422).json({ message: "A senha é obrigatória", field: "password" });
+      res
+        .status(422)
+        .json({ message: "A senha é obrigatória", field: "password" });
       return;
     }
     if (!confirmpassword) {
-      res.status(422).json({ message: "A confirmação de senha é obrigatória", field: "confirmpassword" });
+      res
+        .status(422)
+        .json({
+          message: "A confirmação de senha é obrigatória",
+          field: "confirmpassword",
+        });
       return;
     }
 
     // check if passwords match
     if (password !== confirmpassword) {
-      return res.status(409).json({ message: "As senhas não coincidem", field: "password" });
-    } 
+      return res
+        .status(409)
+        .json({ message: "As senhas não coincidem", field: "password" });
+    }
 
-    // encrypt password
-    const salt = bcrypt.genSaltSync(10);
-    const passwordHash = bcrypt.hashSync(password, salt);
-    // update user, send response
-    await User.update({
+    await UserService.UpdateService(
+      req,
+      res,
+      user,
       name,
       email,
-      password: passwordHash,
-      image: user.image,
-    }, {
-      where: {
-        id
-      }
-    });
-    const userData = await User.findByPk(id);
-    res.status(200).json({ message: "Usuário atualizado com sucesso", user: userData });
+      password,
+      user.image,
+      id
+    )
   }
 
+  static async Delete(req, res)
+  {
+    // get id from params
+    const id = req.params.id;
+    if (!id) {
+      res.status(422).json({ message: "O id é obrigatório", field: "id" });
+      return;
+    }
+    // get token
+    const token = getToken(req);
+    // get user by token
+    const user = await getUserByToken(req, res, token);
+    await UserService.DeleteService(req, res, user, id);
+  }
   static async refreshUserToken(req, res) {
     // get token
     const token = getToken(req);
     if (token === req.cookies.accessToken) {
-      return res.status(200).json({ message: "O token de acesso ainda é válido" });
+      return res
+        .status(200)
+        .json({ message: "O token de acesso ainda é válido" });
     }
     const user = await getUserByToken(req, res, token);
     // if no access token
