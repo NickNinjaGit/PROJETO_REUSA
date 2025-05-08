@@ -8,6 +8,9 @@ import { trackDurationTime } from "../helpers/track-duration-time.js";
 import path from "path";
 import fs from "fs";
 
+// Service
+import { CourseService } from "../services/CourseService.js";
+
 export class CourseController {
   static async getAllCourses(req, res) {
     // pegas lista de cursos do banco
@@ -96,16 +99,7 @@ export class CourseController {
         .status(422)
         .json({ message: "A imagem é obrigatória", field: "thumbnail" });
     }
-    // criar um novo curso
-    const course = await Course.create({
-      title,
-      description,
-      duration: 0,
-      thumbnail,
-      UserId: req.user.id,
-    });
-    // retornar o novo curso
-    res.status(201).json({ course });
+    await CourseService.CreateService(req, res, title, description, thumbnail);
   }
   static async Edit(req, res) {
     // pegar o id do curso pelo parametro de URL
@@ -114,20 +108,6 @@ export class CourseController {
     const { title, description } = req.body;
     // procurar o curso pelo id
     let course = await Course.findByPk(id);
-    if (req.file) {
-      course.thumbnail = req.file.filename;
-      const imagePath = path.resolve(
-        "public",
-        "images",
-        "courses",
-        course.thumbnail
-      );
-      if (fs.existsSync(imagePath)) {
-        fs.unlinkSync(imagePath);
-      }
-      course.thumbnail = req.file.filename;
-      await course.save();
-    }
 
     // campos vazios
     if (!title) {
@@ -144,53 +124,27 @@ export class CourseController {
     if (course.UserId !== req.user.id) {
       return res.status(403).json({ message: "Acesso negado" });
     }
-    // atualizar o curso
-    await Course.update(
-      {
-        title,
-        description,
-      },
-      { where: { id } }
+    await CourseService.EditService(
+      req,
+      res,
+      id,
+      course,
+      title,
+      description
     );
-    // pegando o curso atualizado
-    course = await Course.findByPk(id);
-    // retornar o curso atualizado
-    // atualizar duração do curso (se houver mudança de módulos)
-    await trackDurationTime(course.Modules, course);
-    res.status(200).json({ message: "Curso atualizado com sucesso", course });
   }
   static async Delete(req, res) {
     // pegar id do parametro de URL
     const { id } = req.params;
     // procurar o curso pelo id
     const course = await Course.findByPk(id);
-    console.log(id);
+    if(!course) {
+      return res.status(404).json({ message: "Curso nao encontrado", field: "id" });
+    }
     // verificar se o curso pertence aquele instrutor logado
     if (course.UserId !== req.user.id) {
       return res.status(403).json({ message: "Acesso negado" });
     }
-    // deletar imagens do servidor
-    try {
-      const imagePath = path.resolve(
-        "public",
-        "images",
-        "courses",
-        course.image
-      );
-      if (fs.existsSync(imagePath)) {
-        fs.unlinkSync(imagePath); // Deleta o arquivo de forma síncrona
-        console.log("Imagem deletada:", imagePath);
-      }
-    } catch (error) {
-      console.log(error);
-      res.status(500).json({ message: "Erro ao deletar imagem do servidor" });
-    }
-    
-    // deletar todos os módulos relacionados ao curso
-    await Module.destroy({ where: { CourseId: id } });
-    // deletar o curso
-    await course.destroy();
-    // retornar mensagem de sucesso
-    res.status(200).json({ message: "Curso deletado com sucesso" });
+    await CourseService.DeleteService(req, res, course);
   }
 }

@@ -4,9 +4,12 @@ import { Course } from "../models/Course.js";
 
 // helper
 import { trackDurationTime } from "../helpers/track-duration-time.js";
+
+// Service
+import { ModuleService } from "../services/ModuleService.js";
 export class ModuleController {
   /* Métodos do Instrutor */
-  
+
   static async getAllInstructorModules(req, res) {
     // pegar o usuário logado
     const user = req.user;
@@ -32,6 +35,24 @@ export class ModuleController {
     }
     // devolver todos os módulos relacionados ao curso
     res.status(200).json({ courseModules });
+  }
+  static async getMyModuleById(req, res) {
+    const { courseId, id } = req.params;
+    const course = await Course.findByPk(courseId);
+    if (course.UserId !== req.user.id) {
+      return res.status(403).json({ message: "Acesso negado" });
+    }
+    const module = await Module.findByPk(id, {
+      include: [Lesson],
+    });
+    if (!module) {
+      return res
+        .status(404)
+        .json({ message: "Módulo nao encontrado", field: "id" });
+    }
+    //calcular duração dos módulos baseado no tempo das lições
+    await trackDurationTime(module.Lessons, module);
+    res.status(200).json({ module });
   }
   static async Create(req, res) {
     let { title, description, order } = req.body;
@@ -61,8 +82,7 @@ export class ModuleController {
     const modules = await Module.findAll({ where: { CourseId: course.id } });
     if (modules.length === 0) {
       order = 1;
-    }
-    else if (!order) {
+    } else if (!order) {
       return res
         .status(422)
         .json({ message: "A ordem é obrigatória", field: "order" });
@@ -76,39 +96,20 @@ export class ModuleController {
         field: "order",
       });
     }
-    const duration = 0;
-    const module = await Module.create({
+    await ModuleService.CreateService(
+      req,
+      res,
+      course,
       title,
       description,
-      order,
-      duration,
-      CourseId: course.id,
-    });
-    res.status(200).json({ module });
+      order
+    );
   }
-  static async getMyModuleById(req, res) {
-    const { courseId, id } = req.params;
-    const course = await Course.findByPk(courseId);
-    if (course.UserId !== req.user.id) {
-      return res.status(403).json({ message: "Acesso negado" });
-    }
-    const module = await Module.findByPk(id, {
-      include: [Lesson],
-    });
-    if(!module)
-    {
-      return res
-      .status(404)
-      .json({ message: "Módulo nao encontrado", field: "id" });
-    }
-    //calcular duração dos módulos baseado no tempo das lições
-    await trackDurationTime(module.Lessons, module);
-    res.status(200).json({ module });
-  }
+
   static async Edit(req, res) {
     // pegar id do curso e do módulo pelos parametros de URL
     const { courseId, id } = req.params;
-    const course = await Course.findByPk(courseId);
+    const course = await Course.findByPk(courseId, { include: [Module] });
     // verifica se o curso existe
     if (!course) {
       return res
@@ -119,9 +120,9 @@ export class ModuleController {
     if (course.UserId !== req.user.id) {
       return res.status(403).json({ message: "Acesso negado" });
     }
-
     // pegar dados do body
-    const { title, description, order } = req.body;
+    const { title, description } = req.body;
+    let { order } = req.body;
     // verificar se os campos obrigatórios foram preenchidos
     if (!title) {
       return res
@@ -132,6 +133,16 @@ export class ModuleController {
       return res
         .status(422)
         .json({ message: "A descricao é obrigatória", field: "description" });
+    }
+    const module = await Module.findByPk(id);
+    if (!module) {
+      return res
+        .status(404)
+        .json({ message: "Módulo nao encontrado", field: "id" });
+    }
+    // se já for a primeira ordem, não necessita de campo de ordem no body
+    if (module.order === 1) {
+      order = 1;
     }
     if (!order) {
       return res
@@ -147,23 +158,22 @@ export class ModuleController {
         field: "order",
       });
     }
-
-    const module = await Module.findByPk(id, { include: [Lesson] });
-
-    // editar informações do módulo
-    await Module.update(
-      {
-        title,
-        description,
-        duration: await trackDurationTime(module.Lessons, module),
-        order,
-      },
-      { where: { id } }
+    // verificar se o módulo de id 1 é o único no curso
+    if (course.Modules.length === 1 && order !== 1) {
+      return res.status(409).json({
+        message:
+          "A ordem do primeiro módulo deve ser inicialmente 1, pois o curso possui apenas um módulo",
+      });
+    }
+    await ModuleService.EditService(
+      req,
+      res,
+      id,
+      course,
+      title,
+      description,
+      order
     );
-    const EditedModule = await Module.findByPk(id);
-    res
-      .status(200)
-      .json({ message: "Módulo editado com sucesso", EditedModule });
   }
   static async Delete(req, res) {
     // pega o id do módulo e do curso pelos parametros de URL
@@ -179,11 +189,13 @@ export class ModuleController {
     if (course.UserId !== req.user.id) {
       return res.status(403).json({ message: "Acesso negado" });
     }
-    // deletar o módulo
-    await Module.destroy({ where: { id } });
-    // alterar duração do curso
-    console.log(course);
-    await trackDurationTime(course.Modules, course);
-    res.status(200).json({ message: "Módulo deletado com sucesso" });
+    // verificar se o módulo existe
+    const moduleExist = await Module.findByPk(id);
+    if (!moduleExist) {
+      return res
+        .status(404)
+        .json({ message: "Módulo nao encontrado", field: "id" });
+    }
+    await ModuleService.DeleteService(req, res, id, course);
   }
 }
