@@ -3,7 +3,11 @@ import conn from "./db/conn.js";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import bodyParser from "body-parser";
+import path from 'path';
+import { fileURLToPath } from 'url';
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 // models
 import { User } from "./models/User.js";
 import { Post } from "./models/Post.js";
@@ -19,8 +23,13 @@ import { AdminRoutes } from "./routes/AdminRoutes.js";
 import { CourseRoutes } from "./routes/CourseRoutes.js";
 // import PrizesRoutes from "./routes/PrizesRoutes.js";
 
+import { UserController } from './controllers/UserController.js';
+import { imageUploader } from './middlewares/imageUploader.js';
+
+
 // helper
 import { createFirstAdmin } from "./helpers/create-first-admin.js";
+import { verifyToken } from "./middlewares/verify-token.js";
 
 const app = express();
 // Config JSON response
@@ -35,22 +44,24 @@ app.use(cors({ credentials: true, origin: "http://localhost:5173" }));
 
 try {
   await conn.authenticate();
-  await conn.sync({ force: false });
+  await conn.sync({ force: true });
   await createFirstAdmin();
   console.log("Database connected");
 } catch (error) {
   console.log(error);
 }
 
+
+
 // Routes
+app.use(express.static(path.join(__dirname, 'public')));
 app.use("/users", UserRoutes);
 app.use("/admin", AdminRoutes);
 app.use("/courses", CourseRoutes);
 // app.use("/post", postRoutes);
 // app.use("/prizes", PrizesRoutes);
 
-// Public folder for images
-app.use(express.static("public"));
+
 
 app.listen(5000, () => {
   console.log("Server started on port 5000");

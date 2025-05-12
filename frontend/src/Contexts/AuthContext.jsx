@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
-const AuthContext = createContext();
-
+// Exportações nomeadas
+export const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -30,13 +30,14 @@ export const AuthProvider = ({ children }) => {
       });
 
       const data = await response.json();
-
+      console.log(data)
       if (response.ok && data.user) {
         setUser({
           id: data.user.id,
           name: data.user.name,
           email: data.user.email,
           role: data.user.userRole,
+          image : data.user.image
         });
       } else {
         throw new Error('Usuário não autenticado');
@@ -57,6 +58,7 @@ export const AuthProvider = ({ children }) => {
             name: retryData.user.name,
             email: retryData.user.email,
             role: retryData.user.userRole,
+            image : retryData.user.image
           });
         } else {
           setUser(null);

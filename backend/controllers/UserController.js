@@ -1,7 +1,7 @@
 import { User } from "../models/User.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-
+import validator from "validator"
 // helpers
 import { createUserToken } from "../helpers/create-user-token.js";
 import { getToken } from "../helpers/get-token.js";
@@ -78,20 +78,45 @@ export class UserController {
     res.status(200).json({ message: "Logout bem-sucedido" });
   }
 
-  static async checkUser(req, res, next) {
-    let currentUser = null;
+ static async checkUser(req, res, next) {
+  let currentUser = null;
+  try {
     if (req.cookies.accessToken) {
       const token = getToken(req);
       const decoded = jwt.verify(token, "ReusaSecret");
+
       currentUser = await User.findByPk(decoded.id);
-      currentUser.password = undefined;
+
+      if (currentUser) {
+        currentUser.password = undefined;
+
+        // Montar a imageUrl
+        const imageFile = currentUser.image && currentUser.image.trim() !== ""
+          ? currentUser.image
+          : "Default.png";
+
+       
+
+        // Envia o user com a imageUrl
+        return res.status(200).json({
+          user: {
+            id: currentUser.id,
+            name: currentUser.name,
+            email: currentUser.email,
+            role: currentUser.role,
+            image: currentUser.image,
+            score: currentUser.score,
+          }
+        });
+      }
     } else {
-      currentUser = null;
+      return res.status(401).json({ message: 'Access token missing or expired' });
     }
-
-    res.status(200).json({ user: currentUser });
+  } catch (error) {
+    console.error('Error verifying token or fetching user:', error);
+    res.status(500).json({ message: 'Internal server error' });
   }
-
+}
   static async getUserById(req, res) {
     const { id } = req.params;
     const user = await User.findOne({ where: { id } });
@@ -105,75 +130,82 @@ export class UserController {
   }
 
   static async Update(req, res) {
-    // get id from params
-    const id = req.params.id;
-    if (!id) {
-      res.status(422).json({ message: "O id é obrigatório", field: "id" });
-      return;
-    }
-    // get token
-    const token = getToken(req);
-    // get user by token
-    const user = await getUserByToken(req, res, token);
-    // get user data
-    const { name, email, password, confirmpassword } = req.body;
-    if (req.file) {
-      user.image = req.file.filename;
-    }
-    // empty fields
-    if (!name) {
-      res.status(422).json({ message: "O nome é obrigatório", field: "name" });
-      return;
-    }
+  const id = Number(req.params.id);
+  const token = getToken(req);
+  const user = await getUserByToken(req, res, token);
+  if (!user) return;
 
-    if (!email) {
-      res
-        .status(422)
-        .json({ message: "O email é obrigatório", field: "email" });
-      return;
-    }
-    // check if email exists
-    const userExists = await User.findOne({ where: { email } });
-    if (userExists && userExists.id !== Number(id)) {
-      res
-        .status(422)
-        .json({ message: "Por favor, use outro email", field: "email" });
-      return;
-    }
+
+  
+  const { name, email } = req.body;
+  let { password, confirmpassword } = req.body;
+
+  const oldImage = user.image;
+
+  if (req.file) {
+    user.image = req.file.filename;  // so aqui voce sobrescreve com a nova
+  }
+
+  if (!validator.isEmail(email)) {
+    return res
+      .status(422)
+      .json({ message: 'Formato de e-mail inválido', field: 'email' });
+  }
+
+  if (!name) {
+    return res.status(422).json({ message: "O nome é obrigatório", field: "name" });
+  }
+  if (!email) {
+    return res.status(422).json({ message: "O email é obrigatório", field: "email" });
+  }
+
+  const userExists = await User.findOne({ where: { email } });
+  if (userExists && userExists.id !== Number(id)) {
+    return res
+      .status(422)
+      .json({ message: "Por favor, use outro email", field: "email" });
+  }
+
+  // validação de senha somente se algum dos campos vier preenchido
+  if (password || confirmpassword) {
     if (!password) {
-      res
+      return res
         .status(422)
         .json({ message: "A senha é obrigatória", field: "password" });
-      return;
     }
     if (!confirmpassword) {
-      res
+      return res
         .status(422)
         .json({
           message: "A confirmação de senha é obrigatória",
           field: "confirmpassword",
         });
-      return;
     }
-
-    // check if passwords match
+    if (password.length < 6) {
+    return res
+      .status(422)
+      .json({ message: "A senha deve ter pelo menos 6 caracteres", field: "password" });
+      }
     if (password !== confirmpassword) {
       return res
         .status(409)
         .json({ message: "As senhas não coincidem", field: "password" });
     }
-
-    await UserService.UpdateService(
-      req,
-      res,
-      user,
-      name,
-      email,
-      password,
-      user.image,
-      id
-    )
+  } else {
+    // se nenhum dos dois foi enviado, zera as variáveis para que o service nn altere elas
+    password = null;
   }
+
+  await UserService.UpdateService({
+    user,
+    name,
+    email,
+    password,
+    oldImage,
+    id,
+    res
+  });
+}
 
   static async Delete(req, res)
   {

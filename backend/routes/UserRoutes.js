@@ -15,7 +15,21 @@ router.get("/check-user", UserController.checkUser);
 //profile
 router.get("/profile/:id", verifyToken, UserController.getUserById);
 // edit profile
-router.patch("/profile/edit/:id", verifyToken, imageUploader.single("image"), UserController.Update);
+router.patch(
+  '/profile/edit/:id',
+  verifyToken,
+  (req, res, next) => {
+    imageUploader.single('image')(req, res, err => {
+      if (err) {
+        console.error('❌ Erro Multer:', err);
+        return res.status(400).json({ message: err.message });
+      }
+      console.log('✅ Multer rodou — req.file =', req.file);
+      next();
+    });
+  },
+  UserController.Update
+);
 // delete profile
 router.delete("/profile/delete/:id", verifyToken, UserController.Delete);
 // refresh user token

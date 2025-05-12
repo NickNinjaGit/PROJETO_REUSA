@@ -2,6 +2,7 @@ import { User } from "../models/User.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
+
 // helpers
 import { createUserToken } from "../helpers/create-user-token.js";
 import { getToken } from "../helpers/get-token.js";
@@ -10,6 +11,7 @@ import { refreshToken } from "../helpers/refresh-token.js";
 
 import path from "path";
 import fs from "fs";
+import { Console } from "console";
 
 export class UserService {
   static async RegisterService(req, res, name, email, password) {
@@ -32,6 +34,9 @@ export class UserService {
     }
   }
   static async LoginService(req, res, email, password) {
+     if (!email || !password) {
+    return res.status(400).json({ message: "Email e senha são obrigatórios" });
+    }
     // check if user exists
     const user = await User.findOne({ where: { email } });
     if (!user) {
@@ -53,34 +58,55 @@ export class UserService {
       return res.status(500).json({ message: error });
     }
   }
-  static async UpdateService(req, res, user, name, email, password, image, id) {
+  
+
+  static async UpdateService({
+      user,         // Sequelize instance
+      name,         // string
+      email,        // string
+      password,     // string|null
+      oldImage,     // string|null
+      id,           // number
+      res           // express.Response
+    }) {
     // encrypt password
-    const salt = bcrypt.genSaltSync(10);
-    const passwordHash = bcrypt.hashSync(password, salt);
-    // delete old image from server
-    const imagePath = path.resolve("public", "images", "users", user.image);
-    if (fs.existsSync(imagePath)) {
-      fs.unlinkSync(imagePath);
+    let passwordHash = user.password;
+
+  
+    if (password) {
+      const salt = bcrypt.genSaltSync(10);
+      passwordHash = bcrypt.hashSync(password, salt);
     }
-    // update user, send response
-    await User.update(
-      {
-        name,
-        email,
-        password: passwordHash,
-        image: user.image,
-      },
-      {
-        where: {
-          id,
-        },
-      }
+    
+    if (oldImage) {
+    const oldImagePath = path.resolve(
+      process.cwd(), "public", "images", "users", oldImage
     );
-    const userData = await User.findByPk(id);
-    res
-      .status(200)
-      .json({ message: "Usuário atualizado com sucesso", user: userData });
+    if (fs.existsSync(oldImagePath)) {
+      fs.unlinkSync(oldImagePath);
+    }
   }
+
+    await User.update(
+    {
+      name,
+      email,
+      password: passwordHash,
+      image: user.image,  // agr é o filename novo
+    },
+    { where: { id } }
+  );
+
+  // busca de volta o user atualizado
+  const userData = await User.findByPk(id);
+
+  // responde
+  return res
+    .status(200)
+    .json({ message: "Usuário atualizado com sucesso", user: userData });
+  }
+
+  
   static async DeleteService(req, res, user, id) {
     // find image related to user and delete it
     const image = user.image;

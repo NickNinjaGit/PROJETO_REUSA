@@ -11,7 +11,7 @@ import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignUpPage';
 import ProtectedRoute from './Contexts/ProtectedRoute';
 import CoursePlayer from './pages/CoursePlayer';
-
+import EditProfile from './pages/ProfileEditPage';
 function App() {
   return (
     <AuthProvider>
@@ -20,6 +20,7 @@ function App() {
           <Route element={<Layout />}>
             <Route path="/" element={<Home />} />
             <Route element={<ProtectedRoute />}>
+            <Route path="/profile" element={<EditProfile />} />
               <Route path="/Courses" element={<Courses />} />
               <Route path="/Prizes" element={<Prizes />} />
               <Route path="/Comunity" element={<Comunity />} />

@@ -8,7 +8,10 @@ export default function Layout() {
   const { user, logout, loading } = useAuth();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const sidebarRef = useRef(null);
-
+  const imageUrl = user?.image
+  ? `http://localhost:5000/images/users/${user.image}`
+  : '/images/Default.png';
+  console.log()
   useOnScrollAnimation();
 
   const getNavLinkClass = (path) => {
@@ -35,7 +38,7 @@ export default function Layout() {
         closeSidebar();
       }
     };
-
+    
     if (isSidebarOpen) {
       document.addEventListener('mousedown', handleClickOutside);
     }
@@ -180,6 +183,13 @@ export default function Layout() {
               {user ? (
                 <div className="d-flex align-items-center gap-2">
                   <span className="navbar-text text-white">{user.name}</span>
+                  <Link to="/profile">
+                    <img
+                      src={imageUrl || "/images/Default.png"}
+                      alt="Perfil"
+                      style={{ width: '30px', height: '30px', borderRadius: '50%', cursor: 'pointer' }}
+                    />
+                  </Link>
                   <button
                     className="btn btn-outline-danger"
                     onClick={handleLogout}
