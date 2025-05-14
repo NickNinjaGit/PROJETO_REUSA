@@ -16,7 +16,7 @@ export const createFirstAdmin = async () => {
             password: passwordHash,
             confirmpassword: passwordHash,
             score: -1,
-            image: "AdminPhoto.png",
+            image: "AdminPhoto.jpg",
             role: "ADMIN",
         });
     }

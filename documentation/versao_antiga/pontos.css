@@ -1,0 +1,123 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Poppins', sans-serif;
+  background-color: #f9f9f9;
+  margin: 0;
+  padding: 0;
+  color: #1c1c1c;
+}
+
+
+
+/* Navbar */
+.navbar {
+  background: linear-gradient(90deg, #2E7D32, #4CAF50);
+  padding: 0.5rem 1rem; 
+}
+
+.navbar-brand {
+  display: flex;
+  align-items: center;
+  font-size: 1.5rem;
+}
+
+.navbar-brand img {
+  max-height: 50px; 
+  width: auto; 
+  margin-right: 10px;
+}
+
+.nav-link {
+  font-size: 1.1rem; 
+  padding: 0.75rem 1rem; 
+  color: #FFF !important;
+  font-weight: 400;
+  transition: color 0.3s;
+}
+
+.nav-link:hover {
+  color: #FFCA28 !important;
+}
+
+
+.section-points {
+  padding: 60px 20px;
+}
+
+.points-label {
+  font-size: 18px;
+  font-weight: 500;
+  color: #444;
+  margin-bottom: 0;
+}
+
+.points-value {
+  font-size: 48px;
+  font-weight: 700;
+  color:#2E7D32;
+  margin-bottom: 20px;
+}
+
+.redeem-title {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 40px;
+  color: #222;
+}
+
+.reward-card {
+  border: none;
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  padding: 20px;
+  background-color: #fff;
+  transition: transform 0.2s ease;
+}
+
+.reward-card:hover {
+  transform: translateY(-5px);
+}
+
+.card-title {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 15px;
+  color: #1c1c1c;
+}
+
+.btn-green {
+  background-color: #2E7D32;
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  padding: 8px 16px;
+  font-weight: 600;
+  font-size: 14px;
+  transition: background-color 0.2s ease;
+}
+
+.btn-green:hover {
+  background-color: #2E7D32;
+  color: white;
+}
+
+.reward-card {
+  border: none;
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  padding: 20px;
+  background-color: #fff;
+  transition: transform 0.2s ease;
+  height: 100%; /* Faz todos terem a mesma altura */
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  text-align: center;
+ 
+}
