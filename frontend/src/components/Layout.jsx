@@ -187,7 +187,7 @@ export default function Layout() {
                     <img
                       src={imageUrl || "/images/Default.png"}
                       alt="Perfil"
-                      style={{ width: '30px', height: '30px', borderRadius: '50%', cursor: 'pointer' }}
+                      style={{ width: '30px', height: '30px', borderRadius: '50%', cursor: 'pointer', objectFit: 'cover' }}
                     />
                   </Link>
                   <button

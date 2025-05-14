@@ -33,11 +33,11 @@ const Comunity = () => {
               /> : null}
               <div className={styles.cardActions}>
                 <button className={styles.icon}>
-                  <i class="bi bi-hand-thumbs-up-fill"></i>
+                  <i className="bi bi-hand-thumbs-up-fill"></i>
                   <p>{post.likes}</p>
                 </button>
                 <a className={styles.icon} href="#comment">
-                  <i class="bi bi-chat-fill"></i>
+                  <i className="bi bi-chat-fill"></i>
                   <p>{post.commentCount}</p>
                 </a>
               </div>

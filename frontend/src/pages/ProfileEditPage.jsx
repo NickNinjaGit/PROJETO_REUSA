@@ -104,6 +104,7 @@ const ProfilePage = () => {
         `http://localhost:5000/users/profile/edit/${user.id}`,
         { method: 'PATCH', credentials: 'include', body: data }
       );
+      console.log(response);
       const contentType = response.headers.get('Content-Type');
       let result;
       if (contentType?.includes('application/json')) result = await response.json();

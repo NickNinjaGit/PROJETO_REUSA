@@ -34,9 +34,6 @@ export class UserService {
     }
   }
   static async LoginService(req, res, email, password) {
-     if (!email || !password) {
-    return res.status(400).json({ message: "Email e senha são obrigatórios" });
-    }
     // check if user exists
     const user = await User.findOne({ where: { email } });
     if (!user) {
@@ -46,7 +43,7 @@ export class UserService {
     }
     // check if password is correct
     const checkPassword = bcrypt.compareSync(password, user.password);
-    if (checkPassword === false) {
+    if (!checkPassword) {
       return res
         .status(422)
         .json({ message: "Senha inválida", field: "password" });
@@ -86,24 +83,14 @@ export class UserService {
       fs.unlinkSync(oldImagePath);
     }
   }
-
-    await User.update(
-    {
+    await User.update({
       name,
       email,
       password: passwordHash,
-      image: user.image,  // agr é o filename novo
-    },
-    { where: { id } }
-  );
-
-  // busca de volta o user atualizado
-  const userData = await User.findByPk(id);
-
-  // responde
-  return res
-    .status(200)
-    .json({ message: "Usuário atualizado com sucesso", user: userData });
+      image: user.image,
+    }, {
+      where: { id }
+    })
   }
 
   

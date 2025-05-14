@@ -30,6 +30,7 @@ import { imageUploader } from './middlewares/imageUploader.js';
 // helper
 import { createFirstAdmin } from "./helpers/create-first-admin.js";
 import { verifyToken } from "./middlewares/verify-token.js";
+import helmet from "helmet";
 
 const app = express();
 // Config JSON response
@@ -39,12 +40,27 @@ app.use(cookieParser());
 // config body parser
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+// Configuring helmet
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      imgSrc: ["'self'", "data:", "blob:", "http:", "https:"],
+      mediaSrc: ["'self'", "data:", "blob:", "http:", "https:"],
+      scriptSrc: ["'self'", "'unsafe-inline'"], // se precisar para scripts inline
+      styleSrc: ["'self'", "'unsafe-inline'"],  // se tiver CSS inline
+      connectSrc: ["'self'", "http://localhost:5173"], // para API
+    }
+  },
+  AccessControlAllowOrigin: "http://localhost:5173",
+  crossOriginResourcePolicy: { policy: "same-site" }
+}));
 // Solve CORS
 app.use(cors({ credentials: true, origin: "http://localhost:5173" }));
 
 try {
   await conn.authenticate();
-  await conn.sync({ force: true });
+  await conn.sync({ force: false });
   await createFirstAdmin();
   console.log("Database connected");
 } catch (error) {
